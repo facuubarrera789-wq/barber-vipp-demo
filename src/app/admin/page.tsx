@@ -5,6 +5,28 @@ import { supabaseAdmin } from "../../lib/supabaseAdmin";
 
 export const dynamic = "force-dynamic";
 
+type TurnoBase = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  servicio: string;
+  precio: number;
+  fecha: string;
+  hora: string;
+  forma_pago: string;
+  estado: string;
+  barbero_id: number;
+  barberos:
+    | {
+        nombre: string;
+      }
+    | {
+        nombre: string;
+      }[]
+    | null;
+};
+
 export default async function AdminPage() {
   const autorizado = await isAdmin();
 
@@ -16,11 +38,27 @@ export default async function AdminPage() {
     respuestaTurnos,
     respuestaServicios,
     respuestaHorarios,
+    respuestaBarberos,
   ] = await Promise.all([
     supabaseAdmin
       .from("turnos")
       .select(
-        "id,nombre,apellido,telefono,servicio,precio,fecha,hora,forma_pago,estado"
+        `
+        id,
+        nombre,
+        apellido,
+        telefono,
+        servicio,
+        precio,
+        fecha,
+        hora,
+        forma_pago,
+        estado,
+        barbero_id,
+        barberos (
+          nombre
+        )
+      `
       )
       .order("fecha", {
         ascending: true,
@@ -40,8 +78,19 @@ export default async function AdminPage() {
 
     supabaseAdmin
       .from("horarios")
-      .select("id,hora,activo")
+      .select(
+        "id,hora,activo"
+      )
       .order("hora", {
+        ascending: true,
+      }),
+
+    supabaseAdmin
+      .from("barberos")
+      .select(
+        "id,nombre,activo"
+      )
+      .order("id", {
         ascending: true,
       }),
   ]);
@@ -67,32 +116,86 @@ export default async function AdminPage() {
     );
   }
 
-  const turnos =
-    respuestaTurnos.data ?? [];
+  if (respuestaBarberos.error) {
+    console.error(
+      "Error cargando barberos:",
+      respuestaBarberos.error
+    );
+  }
 
-  const servicios =
-    respuestaServicios.data ?? [];
+  const turnosRaw =
+    (respuestaTurnos.data ??
+      []) as TurnoBase[];
+
+  const turnos =
+    turnosRaw.map((turno) => {
+      let barberoNombre =
+        "Sin asignar";
+
+      if (
+        Array.isArray(
+          turno.barberos
+        )
+      ) {
+        barberoNombre =
+          turno.barberos[0]
+            ?.nombre ??
+          "Sin asignar";
+      } else if (
+        turno.barberos
+      ) {
+        barberoNombre =
+          turno.barberos.nombre;
+      }
+
+      return {
+        id: turno.id,
+        nombre: turno.nombre,
+        apellido:
+          turno.apellido,
+        telefono:
+          turno.telefono,
+        servicio:
+          turno.servicio,
+        precio: turno.precio,
+        fecha: turno.fecha,
+        hora: String(
+          turno.hora
+        ).slice(0, 5),
+        forma_pago:
+          turno.forma_pago,
+        estado: turno.estado,
+        barbero_id:
+          turno.barbero_id,
+        barbero_nombre:
+          barberoNombre,
+      };
+    });
 
   const horarios =
     respuestaHorarios.data?.map(
       (horario) => ({
-        id: Number(horario.id),
-
+        id: horario.id,
         hora: String(
           horario.hora
         ).slice(0, 5),
-
-        activo: Boolean(
-          horario.activo
-        ),
+        activo:
+          horario.activo,
       })
     ) ?? [];
 
   return (
     <AdminAgenda
       turnos={turnos}
-      servicios={servicios}
+      servicios={
+        respuestaServicios.data ??
+        []
+      }
       horarios={horarios}
+      barberos={
+        respuestaBarberos.data ??
+        []
+      }
     />
   );
 }
