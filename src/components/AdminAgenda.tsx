@@ -54,7 +54,8 @@ type Props = {
 function obtenerHoy() {
   const ahora = new Date();
 
-  const año = ahora.getFullYear();
+  const año =
+    ahora.getFullYear();
 
   const mes = String(
     ahora.getMonth() + 1
@@ -67,9 +68,13 @@ function obtenerHoy() {
   return `${año}-${mes}-${dia}`;
 }
 
-function esServicioColor(nombre: string) {
+function esServicioColor(
+  nombre: string
+) {
   return (
-    nombre.trim().toLowerCase() ===
+    nombre
+      .trim()
+      .toLowerCase() ===
     "color"
   );
 }
@@ -82,31 +87,42 @@ export default function AdminAgenda({
 }: Props) {
   const router = useRouter();
 
-  const [filtro, setFiltro] =
+  const [
+    filtro,
+    setFiltro,
+  ] =
     useState<Filtro>("hoy");
 
-  const [busqueda, setBusqueda] =
-    useState("");
+  const [
+    busqueda,
+    setBusqueda,
+  ] = useState("");
 
-  const [precios, setPrecios] =
-    useState<Record<number, string>>(
-      () =>
-        Object.fromEntries(
-          servicios
-            .filter(
-              (servicio) =>
-                !esServicioColor(
-                  servicio.nombre
-                )
+  const [
+    precios,
+    setPrecios,
+  ] = useState<
+    Record<number, string>
+  >(() =>
+    Object.fromEntries(
+      servicios
+        .filter(
+          (servicio) =>
+            !esServicioColor(
+              servicio.nombre
             )
-            .map((servicio) => [
-              servicio.id,
-              String(
-                servicio.precio ?? 0
-              ),
-            ])
         )
-    );
+        .map(
+          (servicio) => [
+            servicio.id,
+            String(
+              servicio.precio ??
+                0
+            ),
+          ]
+        )
+    )
+  );
 
   const [
     nuevoBarbero,
@@ -116,23 +132,26 @@ export default function AdminAgenda({
   const [
     procesandoServicio,
     setProcesandoServicio,
-  ] = useState<number | null>(
-    null
-  );
+  ] =
+    useState<number | null>(
+      null
+    );
 
   const [
     procesandoHorario,
     setProcesandoHorario,
-  ] = useState<number | null>(
-    null
-  );
+  ] =
+    useState<number | null>(
+      null
+    );
 
   const [
     procesandoBarbero,
     setProcesandoBarbero,
-  ] = useState<number | null>(
-    null
-  );
+  ] =
+    useState<number | null>(
+      null
+    );
 
   const [
     agregandoBarbero,
@@ -144,13 +163,18 @@ export default function AdminAgenda({
     setCerrandoSesion,
   ] = useState(false);
 
-  const [mensaje, setMensaje] =
-    useState("");
+  const [
+    mensaje,
+    setMensaje,
+  ] = useState("");
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError,
+  ] = useState("");
 
-  const hoy = obtenerHoy();
+  const hoy =
+    obtenerHoy();
 
   const cantidadHoy =
     turnos.filter(
@@ -184,60 +208,62 @@ export default function AdminAgenda({
     ).length;
 
   const turnosFiltrados =
-    turnos.filter((turno) => {
-      if (
-        filtro === "hoy" &&
-        !(
-          turno.estado ===
-            "confirmado" &&
-          turno.fecha === hoy
-        )
-      ) {
-        return false;
+    turnos.filter(
+      (turno) => {
+        if (
+          filtro === "hoy" &&
+          !(
+            turno.estado ===
+              "confirmado" &&
+            turno.fecha === hoy
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          filtro ===
+            "proximos" &&
+          !(
+            turno.estado ===
+              "confirmado" &&
+            turno.fecha > hoy
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          filtro ===
+            "historial" &&
+          !(
+            turno.estado ===
+              "confirmado" &&
+            turno.fecha < hoy
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          filtro ===
+            "cancelados" &&
+          turno.estado !==
+            "cancelado"
+        ) {
+          return false;
+        }
+
+        const texto =
+          `${turno.nombre} ${turno.apellido} ${turno.telefono} ${turno.barbero_nombre}`.toLowerCase();
+
+        return texto.includes(
+          busqueda
+            .trim()
+            .toLowerCase()
+        );
       }
-
-      if (
-        filtro ===
-          "proximos" &&
-        !(
-          turno.estado ===
-            "confirmado" &&
-          turno.fecha > hoy
-        )
-      ) {
-        return false;
-      }
-
-      if (
-        filtro ===
-          "historial" &&
-        !(
-          turno.estado ===
-            "confirmado" &&
-          turno.fecha < hoy
-        )
-      ) {
-        return false;
-      }
-
-      if (
-        filtro ===
-          "cancelados" &&
-        turno.estado !==
-          "cancelado"
-      ) {
-        return false;
-      }
-
-      const texto =
-        `${turno.nombre} ${turno.apellido} ${turno.telefono} ${turno.barbero_nombre}`.toLowerCase();
-
-      return texto.includes(
-        busqueda
-          .trim()
-          .toLowerCase()
-      );
-    });
+    );
 
   async function cerrarSesion() {
     setCerrandoSesion(true);
@@ -260,7 +286,10 @@ export default function AdminAgenda({
       activo?: boolean;
     }
   ) {
-    setProcesandoServicio(id);
+    setProcesandoServicio(
+      id
+    );
+
     setMensaje("");
     setError("");
 
@@ -270,10 +299,12 @@ export default function AdminAgenda({
           "/api/admin/servicios",
           {
             method: "PATCH",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               id,
               ...cambios,
@@ -298,6 +329,7 @@ export default function AdminAgenda({
         setPrecios(
           (actuales) => ({
             ...actuales,
+
             [id]: String(
               resultado.servicio
                 .precio
@@ -379,10 +411,12 @@ export default function AdminAgenda({
           "/api/admin/horarios",
           {
             method: "PATCH",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               id: horario.id,
               activo:
@@ -436,7 +470,10 @@ export default function AdminAgenda({
       return;
     }
 
-    setAgregandoBarbero(true);
+    setAgregandoBarbero(
+      true
+    );
+
     setMensaje("");
     setError("");
 
@@ -446,10 +483,12 @@ export default function AdminAgenda({
           "/api/admin/barberos",
           {
             method: "POST",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               nombre,
             }),
@@ -502,10 +541,12 @@ export default function AdminAgenda({
           "/api/admin/barberos",
           {
             method: "PATCH",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               id: barbero.id,
               activo:
@@ -534,6 +575,71 @@ export default function AdminAgenda({
         err instanceof Error
           ? err.message
           : "No se pudo actualizar el barbero"
+      );
+    } finally {
+      setProcesandoBarbero(
+        null
+      );
+    }
+  }
+
+  async function eliminarBarbero(
+    barbero: BarberoAdmin
+  ) {
+    const confirmar =
+      window.confirm(
+        `¿Eliminar definitivamente a ${barbero.nombre}?`
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    setProcesandoBarbero(
+      barbero.id
+    );
+
+    setMensaje("");
+    setError("");
+
+    try {
+      const respuesta =
+        await fetch(
+          "/api/admin/barberos",
+          {
+            method: "DELETE",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              id: barbero.id,
+            }),
+          }
+        );
+
+      const resultado =
+        await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(
+          resultado.error ||
+            "No se pudo eliminar el barbero"
+        );
+      }
+
+      setMensaje(
+        `${resultado.nombre} eliminado correctamente.`
+      );
+
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo eliminar el barbero"
       );
     } finally {
       setProcesandoBarbero(
@@ -611,6 +717,7 @@ export default function AdminAgenda({
           </div>
         )}
 
+        {/* BARBEROS */}
         <section className="mt-10 rounded-3xl border border-yellow-500/20 bg-[#111] p-6">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">
             Equipo
@@ -621,14 +728,16 @@ export default function AdminAgenda({
           </h2>
 
           <p className="mt-2 text-sm text-neutral-500">
-            Administrá quiénes
-            aparecen disponibles
-            para recibir turnos.
+            Agregá, activá,
+            desactivá o eliminá
+            integrantes del equipo.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <input
-              value={nuevoBarbero}
+              value={
+                nuevoBarbero
+              }
               onChange={(event) =>
                 setNuevoBarbero(
                   event.target.value
@@ -666,7 +775,9 @@ export default function AdminAgenda({
             {barberos.map(
               (barbero) => (
                 <div
-                  key={barbero.id}
+                  key={
+                    barbero.id
+                  }
                   className={`rounded-2xl border p-5 ${
                     barbero.activo
                       ? "border-green-500/20 bg-green-500/[0.04]"
@@ -680,7 +791,9 @@ export default function AdminAgenda({
                       </div>
 
                       <p className="mt-3 text-xl font-black">
-                        {barbero.nombre}
+                        {
+                          barbero.nombre
+                        }
                       </p>
                     </div>
 
@@ -721,12 +834,29 @@ export default function AdminAgenda({
                         ? "DESACTIVAR"
                         : "ACTIVAR"}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      eliminarBarbero(
+                        barbero
+                      )
+                    }
+                    disabled={
+                      procesandoBarbero ===
+                      barbero.id
+                    }
+                    className="mt-3 w-full rounded-xl border border-red-500/30 bg-red-500/5 py-3 font-black text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
+                  >
+                    ELIMINAR
+                  </button>
                 </div>
               )
             )}
           </div>
         </section>
 
+        {/* SERVICIOS */}
         <section className="mt-8 rounded-3xl border border-yellow-500/20 bg-[#111] p-6">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">
             Servicios
@@ -821,7 +951,10 @@ export default function AdminAgenda({
                     <div className="flex justify-between gap-3">
                       <div>
                         <p className="font-black">
-                          ✂️ {servicio.nombre}
+                          ✂️{" "}
+                          {
+                            servicio.nombre
+                          }
                         </p>
 
                         <p className="mt-1 text-sm text-neutral-500">
@@ -864,6 +997,7 @@ export default function AdminAgenda({
                               actuales
                             ) => ({
                               ...actuales,
+
                               [servicio.id]:
                                 event
                                   .target
@@ -919,6 +1053,7 @@ export default function AdminAgenda({
           </div>
         </section>
 
+        {/* HORARIOS */}
         <section className="mt-8 rounded-3xl border border-white/10 bg-[#111] p-6">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">
             Agenda
@@ -957,7 +1092,9 @@ export default function AdminAgenda({
                   }`}
                 >
                   <span className="block text-xl font-black">
-                    {horario.hora}
+                    {
+                      horario.hora
+                    }
                   </span>
 
                   <span className="mt-1 block text-[10px] font-black">
@@ -971,6 +1108,7 @@ export default function AdminAgenda({
           </div>
         </section>
 
+        {/* TURNOS */}
         <section className="mt-12">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">
             Turnos
@@ -983,7 +1121,9 @@ export default function AdminAgenda({
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Filtro
               nombre="Hoy"
-              cantidad={cantidadHoy}
+              cantidad={
+                cantidadHoy
+              }
               activo={
                 filtro === "hoy"
               }
@@ -1053,7 +1193,10 @@ export default function AdminAgenda({
           />
 
           <p className="mt-5 text-sm text-neutral-500">
-            {turnosFiltrados.length} turnos encontrados
+            {
+              turnosFiltrados.length
+            }{" "}
+            turnos encontrados
           </p>
 
           {turnosFiltrados.length ===
@@ -1064,7 +1207,8 @@ export default function AdminAgenda({
               </p>
 
               <p className="mt-4 font-black">
-                No hay turnos para mostrar.
+                No hay turnos para
+                mostrar.
               </p>
             </div>
           ) : (
@@ -1072,9 +1216,15 @@ export default function AdminAgenda({
               {turnosFiltrados.map(
                 (turno) => (
                   <TurnoCard
-                    key={turno.id}
-                    turno={turno}
-                    horarios={horarios}
+                    key={
+                      turno.id
+                    }
+                    turno={
+                      turno
+                    }
+                    horarios={
+                      horarios
+                    }
                     actualizar={() =>
                       router.refresh()
                     }
@@ -1133,7 +1283,8 @@ function TurnoCard({
   const [
     fechaNueva,
     setFechaNueva,
-  ] = useState(turno.fecha);
+  ] =
+    useState(turno.fecha);
 
   const [
     horaNueva,
@@ -1144,19 +1295,24 @@ function TurnoCard({
     ).slice(0, 5)
   );
 
-  const [cargando, setCargando] =
-    useState(false);
+  const [
+    cargando,
+    setCargando,
+  ] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError,
+  ] = useState("");
 
   const cancelado =
     turno.estado ===
     "cancelado";
 
-  const horaActual = String(
-    turno.hora
-  ).slice(0, 5);
+  const horaActual =
+    String(
+      turno.hora
+    ).slice(0, 5);
 
   const horariosActivos =
     horarios
@@ -1194,10 +1350,12 @@ function TurnoCard({
           `/api/admin/turnos/${turno.id}`,
           {
             method: "PATCH",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify(
               cambios
             ),
@@ -1336,20 +1494,27 @@ function TurnoCard({
             <p>
               💈 Barbero:{" "}
               <strong className="text-yellow-500">
-                {turno.barbero_nombre}
+                {
+                  turno.barbero_nombre
+                }
               </strong>
             </p>
 
             <p>
-              ✂️ {turno.servicio}
+              ✂️{" "}
+              {turno.servicio}
             </p>
 
             <p>
-              📱 {turno.telefono}
+              📱{" "}
+              {turno.telefono}
             </p>
 
             <p>
-              💳 {turno.forma_pago}
+              💳{" "}
+              {
+                turno.forma_pago
+              }
             </p>
 
             <p>
@@ -1401,8 +1566,12 @@ function TurnoCard({
           <div className="flex flex-wrap gap-3 lg:flex-col">
             <button
               type="button"
-              onClick={moverTurno}
-              disabled={cargando}
+              onClick={
+                moverTurno
+              }
+              disabled={
+                cargando
+              }
               className="rounded-xl bg-yellow-500 px-5 py-3 font-black text-black disabled:opacity-50"
             >
               {cargando
@@ -1412,8 +1581,12 @@ function TurnoCard({
 
             <button
               type="button"
-              onClick={cancelarTurno}
-              disabled={cargando}
+              onClick={
+                cancelarTurno
+              }
+              disabled={
+                cargando
+              }
               className="rounded-xl bg-red-500/10 px-5 py-3 font-black text-red-400 disabled:opacity-50"
             >
               Cancelar
@@ -1422,8 +1595,12 @@ function TurnoCard({
         ) : (
           <button
             type="button"
-            onClick={borrarTurno}
-            disabled={cargando}
+            onClick={
+              borrarTurno
+            }
+            disabled={
+              cargando
+            }
             className="rounded-xl bg-red-600 px-5 py-3 font-black text-white disabled:opacity-50"
           >
             {cargando
