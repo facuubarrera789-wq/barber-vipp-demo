@@ -126,11 +126,6 @@ export default function Home() {
     );
 
   const [
-    mostrarDemoWhatsApp,
-    setMostrarDemoWhatsApp,
-  ] = useState(false);
-
-  const [
     servicioSeleccionado,
     setServicioSeleccionado,
   ] = useState<number | null>(
@@ -449,9 +444,6 @@ export default function Home() {
   useEffect(() => {
     setHora("");
     setError("");
-    setMostrarDemoWhatsApp(
-      false
-    );
 
     if (
       modoColor ||
@@ -477,10 +469,6 @@ export default function Home() {
   ) {
     setModoColor(false);
     setTipoColor(null);
-
-    setMostrarDemoWhatsApp(
-      false
-    );
 
     setServicioSeleccionado(
       (actual) =>
@@ -531,12 +519,7 @@ export default function Home() {
     setFecha("");
     setHora("");
     setOcupados([]);
-
     setError("");
-
-    setMostrarDemoWhatsApp(
-      false
-    );
   }
 
   function seleccionarTipoColor(
@@ -556,10 +539,6 @@ export default function Home() {
 
     setHora("");
     setOcupados([]);
-
-    setMostrarDemoWhatsApp(
-      false
-    );
   }
 
   function seleccionarFecha(
@@ -587,6 +566,52 @@ export default function Home() {
         actual === valor
           ? ""
           : valor
+    );
+  }
+
+  function abrirConsultaColorWhatsApp() {
+    if (!tipoColor || !fecha) {
+      setError(
+        "Elegí el tipo de color y una fecha."
+      );
+
+      return;
+    }
+
+    const numero =
+      process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+
+    if (!numero) {
+      setError(
+        "El WhatsApp de la barbería todavía no está configurado."
+      );
+
+      return;
+    }
+
+    const partesFecha =
+      fecha.split("-");
+
+    const fechaFormateada =
+      partesFecha.length === 3
+        ? `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`
+        : fecha;
+
+    const mensaje =
+      `Hola, quisiera consultar por un trabajo de Color en Barber VIPP.\n\n` +
+      `🎨 Tipo de trabajo: ${tipoColor}\n` +
+      `📅 Día elegido: ${fechaFormateada}\n\n` +
+      `Quisiera consultar disponibilidad, horario, duración y precio.`;
+
+    const link =
+      `https://wa.me/${numero}?text=${encodeURIComponent(
+        mensaje
+      )}`;
+
+    window.open(
+      link,
+      "_blank",
+      "noopener,noreferrer"
     );
   }
 
@@ -894,12 +919,8 @@ export default function Home() {
                   </p>
 
                   <p className="mt-1 font-black">
-                    {
-                      confirmacion.nombre
-                    }{" "}
-                    {
-                      confirmacion.apellido
-                    }
+                    {confirmacion.nombre}{" "}
+                    {confirmacion.apellido}
                   </p>
                 </div>
 
@@ -1257,24 +1278,18 @@ export default function Home() {
                     !tipoColor ||
                     !fecha
                   }
-                  onClick={() =>
-                    setMostrarDemoWhatsApp(
-                      true
-                    )
+                  onClick={
+                    abrirConsultaColorWhatsApp
                   }
                   className="mt-6 w-full rounded-xl bg-green-500 py-4 font-black text-black disabled:opacity-40"
                 >
-                  CONSULTAR POR WHATSAPP →
+                  💬 CONSULTAR POR WHATSAPP →
                 </button>
 
-                {mostrarDemoWhatsApp && (
-                  <div className="mt-5 rounded-xl bg-green-500/10 p-5 text-green-300">
-                    💬 En la versión
-                    personalizada se
-                    abrirá el WhatsApp
-                    real de la barbería.
-                  </div>
-                )}
+                <p className="mt-4 text-sm text-neutral-500">
+                  Se abrirá WhatsApp con el tipo de color y el día que elegiste.
+                  El horario, la duración y el precio se coordinan con la barbería.
+                </p>
               </section>
             ) : (
               <>
